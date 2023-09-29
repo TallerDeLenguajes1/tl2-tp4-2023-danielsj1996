@@ -1,0 +1,27 @@
+
+[
+    {
+        "Id": 0,
+        "Nombre": "Juan Veliz",
+        "Direccion": "Rondeau 250",
+        "Telefono": "+5493815234123"
+    },
+    {
+        "Id": 1,
+        "Nombre": "Enrique Perez",
+        "Direccion": "Don bosco 400",
+        "Telefono": "+5493815234345"
+    },
+    {
+        "Id": 2,
+        "Nombre": "José Juarez",
+        "Direccion": "Av. Salta 560",
+        "Telefono": "+5493815702021"
+    },
+    {
+        "Id": 3,
+        "Nombre": "Sofia Reyes",
+        "Direccion": "Prov. de Entre Rios 546",
+        "Telefono": "+5493814856874"
+    }
+]
