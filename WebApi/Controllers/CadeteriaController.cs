@@ -59,9 +59,9 @@ public class CadeteriaController : ControllerBase
 
     public ActionResult<IEnumerable<Pedido>> GetPedidos()
     {
-        if (mostaza.AccesoDatosPedidos.ObtenerListaPedidos().Count != 0)
+        if (mostaza.ListadePedidos.Count != 0)
         {
-            return Ok(mostaza.AccesoDatosPedidos.ObtenerListaPedidos());
+            return Ok(mostaza.ListadePedidos);
         }
         else
         {
