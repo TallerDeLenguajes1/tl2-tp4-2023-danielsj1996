@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace WebApi;
 
-public abstract class AccesoDatosCadeteria
+public abstract class AccesoDatos
 {
     public abstract Cadeteria ObtenerInfoCadeteria(string rutaDatosCadeteria);
     public abstract List<Cadete> ObtenerListaCadetes(string rutaDatosCadetes);
@@ -23,7 +23,7 @@ public abstract class AccesoDatosCadeteria
         }
     }
 }
-public class AccesoCSV : AccesoDatosCadeteria
+public class AccesoCSV : AccesoDatos
 {
     
     public override Cadeteria ObtenerInfoCadeteria(string rutaDatosCadeteria){
@@ -56,7 +56,7 @@ public class AccesoCSV : AccesoDatosCadeteria
         return cadetes;
     }
 }
-public class AccesoAJson : AccesoDatosCadeteria
+public class AccesoAJson : AccesoDatos
 {
     public override Cadeteria ObtenerInfoCadeteria(string rutaDatosCadeteria)
     {

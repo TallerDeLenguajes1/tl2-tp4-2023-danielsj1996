@@ -1,24 +1,25 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace WebApi;
+
+
 public class Cadeteria
 {
-    private AccesoDatosCadeteria acceso;
+    private AccesoDatosPedido accesoDatosPedidos;
+    private AccesoDatosCadeteria accesoDatosCadeteria;
+    private AccesoDatosCadete accesoDatosCadetes;
+    private AccesoDatos acceso;
+
     private static Cadeteria instance;
+    private List<Cadete> listadeCadetes;
     private string nombre;
     private string telefono;
-    private List<Cadete> listadeCadetes;
-    private List<Pedido> listadePedidos;
+
 
 
 
     public string Nombre { get => nombre; set => nombre = value; }
     public string Telefono { get => telefono; set => telefono = value; }
     public List<Cadete> ListadeCadetes { get => listadeCadetes; }
-    public List<Pedido> ListadePedidos { get => listadePedidos; set => listadePedidos = value; }
-
-
+    public AccesoDatosPedido AccesoDatosPedidos { get => accesoDatosPedidos; }
 
     private Cadeteria() { }
 
@@ -26,46 +27,27 @@ public class Cadeteria
     {
         this.Nombre = nombre;
         this.Telefono = telefono;
-        this.ListadePedidos = new List<Pedido>();
+        
     }
     public static Cadeteria GetCadeteria()
     {
         if (instance == null)
         {
-            instance = new Cadeteria();
-            return instance;
-        }
-        else
-        {
-            return instance;
-        }
-    }    public bool CargaDatosIniciales(string tipoAcceso){
-        bool cargaRealizada = false;
-        List<Cadete> listacadetes = new List<Cadete>();
-        if(tipoAcceso == "csv"){
-            acceso = new AccesoCSV();
-            if(acceso.ExisteArchivoDatos("datosCadeteria.csv")){
-                instance = acceso.ObtenerInfoCadeteria("datosCadeteria.csv");
-                if(acceso.ExisteArchivoDatos("datosCadetes.csv")){
-                    listacadetes = acceso.ObtenerListaCadetes("datosCadetes.csv");
-                    cargaRealizada = true;
+            var accesoDatosCadeteria = new AccesoDatosCadeteria();
+            if (accesoDatosCadeteria.ObtenerInfoCadeteria != null)
+            {
+                instance = accesoDatosCadeteria.ObtenerInfoCadeteria();
+                instance.accesoDatosCadetes = new AccesoDatosCadete();
+                if (instance.accesoDatosCadetes.ObtenerListaCadetes().Count != null)
+                {
+                    instance.AgregarListaCadetes(instance.accesoDatosCadetes.ObtenerListaCadetes());
+                    instance.accesoDatosPedidos = new AccesoDatosPedido();
                 }
-                instance.AgregarListaCadetes(listacadetes);
-            } 
-        } else{
-            acceso = new AccesoAJson();
-            if(acceso.ExisteArchivoDatos("../DatosCadeteria.json")){
-                instance = acceso.ObtenerInfoCadeteria("../DatosCadeteria.json");
-                if(acceso.ExisteArchivoDatos("../DatosCadetes.json")){
-                    listadeCadetes = acceso.ObtenerListaCadetes("../DatosCadetes.json");
-                    cargaRealizada = true;
-                }
-                instance.AgregarListaCadetes(listacadetes);
-            } 
+            }
         }
-
-        return cargaRealizada;
+        return instance;
     }
+
 
 
     public void AgregarListaCadetes(List<Cadete> listadeCadetes)
@@ -76,17 +58,19 @@ public class Cadeteria
 
     public bool NuevoPedido(string obsPedido, string nombreCliente, string DireccionCliente, string telefonoCl, string datosRefCl)
     {
-        int nroPedido = listadePedidos.Count+1;
+        List<Pedido> listadePedidos = accesoDatosPedidos.ObtenerListaPedidos();
+        int nroPedido = listadePedidos.Count + 1;
         Pedido pedido = new Pedido(nroPedido, obsPedido, nombreCliente, DireccionCliente, telefonoCl, datosRefCl);
-        bool pedidoAgregado = AgregarPedido(pedido);
+        bool pedidoAgregado = AgregarPedido(pedido, listadePedidos);
         return pedidoAgregado;
     }
-    public bool AgregarPedido(Pedido ped)
+    public bool AgregarPedido(Pedido ped, List<Pedido> listadePedidos)
     {
         bool agregado = false;
         if (ped != null)
         {
-            ListadePedidos.Add(ped);
+            listadePedidos.Add(ped);
+            instance.accesoDatosPedidos.GuardarLista(listadePedidos);
             agregado = true;
         }
         return agregado;
@@ -94,6 +78,7 @@ public class Cadeteria
     }
     public bool AsignarCadeteAPedido(int idCadete, int nroPedido)
     {
+        List<Pedido> listadePedidos = accesoDatosPedidos.ObtenerListaPedidos();
         bool asignacionOK = false;
         Cadete cad = listadeCadetes.Find(x => x.Id == idCadete);
 
@@ -105,6 +90,7 @@ public class Cadeteria
                 {
                     p.VincularCadate(cad);
                     asignacionOK = true;
+                    instance.AccesoDatosPedidos.GuardarLista(listadePedidos);
                     break;
                 }
             }
@@ -116,11 +102,13 @@ public class Cadeteria
 
     public bool CambiarEstadoPedido(int nroPedido, int nuevoEstado)
     {
+        List<Pedido> listadePedidos = accesoDatosPedidos.ObtenerListaPedidos();
         foreach (var p in listadePedidos)
         {
             if (p.Nro == nroPedido)
             {
                 p.CambiarEstado(nuevoEstado);
+                instance.AccesoDatosPedidos.GuardarLista(listadePedidos);
                 return true;
             }
         }
@@ -130,6 +118,7 @@ public class Cadeteria
 
     public bool ReasignarPedidoACadete(int nroPedido, int idCadete)
     {
+        List<Pedido> listadePedidos = accesoDatosPedidos.ObtenerListaPedidos();
         bool reasignacionOk = false;
         Cadete cad = listadeCadetes.Find(cadete => cadete.Id == idCadete);
 
@@ -141,16 +130,17 @@ public class Cadeteria
                 {
                     p.VincularCadate(cad);
                     reasignacionOk = true;
+                    instance.AccesoDatosPedidos.GuardarLista(listadePedidos);
                 }
             }
         }
 
         return reasignacionOk;
     }
-        public int CantPedidosCadete(int idCadete, EstadoPedido estado)
-    {
+    public int CantPedidosCadete(int idCadete, EstadoPedido estado)
+    {List<Pedido> listadePedidos = accesoDatosPedidos.ObtenerListaPedidos();
         int cant = 0;
-        foreach (var p in ListadePedidos)
+        foreach (var p in listadePedidos)
         {
             if (p.ExisteCadete() && (p.IdCadete() == idCadete) && (p.Estado == estado))
             {

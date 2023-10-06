@@ -31,5 +31,5 @@ C:\tl2-tp4-2023-danielsj1996\WebApi\obj\Debug\net7.0\refint\WebApi.dll
 C:\tl2-tp4-2023-danielsj1996\WebApi\obj\Debug\net7.0\WebApi.pdb
 C:\tl2-tp4-2023-danielsj1996\WebApi\obj\Debug\net7.0\WebApi.genruntimeconfig.cache
 C:\tl2-tp4-2023-danielsj1996\WebApi\obj\Debug\net7.0\ref\WebApi.dll
-C:\tl2-tp4-2023-danielsj1996\WebApi\bin\Debug\net7.0\Controllers\DatosCadeteria.Json
-C:\tl2-tp4-2023-danielsj1996\WebApi\bin\Debug\net7.0\Controllers\DatosCadetes.Json
+C:\tl2-tp4-2023-danielsj1996\WebApi\bin\Debug\net7.0\DatosCadeteria.Json
+C:\tl2-tp4-2023-danielsj1996\WebApi\bin\Debug\net7.0\DatosCadetes.Json

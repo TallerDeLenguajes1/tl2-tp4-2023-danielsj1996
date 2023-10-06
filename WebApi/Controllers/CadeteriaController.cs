@@ -16,11 +16,16 @@ public class CadeteriaController : ControllerBase
     {
         _logger = logger;
         mostaza = Cadeteria.GetCadeteria();
+        if (mostaza!=null)
+        {
+            datosCargados=true;
+        }
 
     }
 
 
     [HttpGet]
+    [Route("infoCadeteria")]
     public ActionResult<string> GetInfo()
     {
             if (!datosCargados)
@@ -31,22 +36,6 @@ public class CadeteriaController : ControllerBase
         {
             string info = mostaza.Nombre + "," + mostaza.Telefono;
             return Ok(info);
-        }
-    }
-
-
-    [HttpGet]
-    [Route("Pedido")]
-
-    public ActionResult<IEnumerable<Pedido>> GetPedidos()
-    {
-        if (mostaza.ListadePedidos.Count != 0)
-        {
-            return Ok(mostaza.ListadePedidos);
-        }
-        else
-        {
-            return NotFound("ERROR. Ningun pedido Cargado Actualmente");
         }
     }
 
@@ -66,6 +55,23 @@ public class CadeteriaController : ControllerBase
     }
 
     [HttpGet]
+    [Route("Pedido")]
+
+    public ActionResult<IEnumerable<Pedido>> GetPedidos()
+    {
+        if (mostaza.AccesoDatosPedidos.ObtenerListaPedidos().Count != 0)
+        {
+            return Ok(mostaza.AccesoDatosPedidos.ObtenerListaPedidos());
+        }
+        else
+        {
+            return NotFound("ERROR. Ningun pedido Cargado Actualmente");
+        }
+    }
+
+
+
+    [HttpGet]
     [Route("Informe")]
     public ActionResult<Informe> GetInforme()
     {
@@ -78,25 +84,13 @@ public class CadeteriaController : ControllerBase
             return Ok(mostaza.CrearInforme());
         }
     }
-    [HttpPost("CargaDatos")]
-    public ActionResult<string> CargaInicialDatos(string tipoAcceso)
-    {
-        if (!mostaza.CargarDatosIniciales(tipoAcceso))
-        {
-            return StatusCode(500, "ERROR. No se cargaron los datos correctamente.");
-        }
-        else
-        {
-            datosCargados = true;
-            return Ok("Datos cargados correctamente");
-        }
-    }
+
     [HttpPost("Add_Pedidos")]
     public ActionResult<string> AddPedidos(string obsPedido, string nombreCliente, string DireccionCliente, string telefonoCl, string datosRefCl)
     {
         if (!mostaza.NuevoPedido(obsPedido, nombreCliente, DireccionCliente, telefonoCl, datosRefCl))
         {
-            return StatusCode(500, "No se pudo tomar el pedido");
+            return BadRequest("No se pudo tomar el pedido");
         }else
         {
             return Ok("Pedido Agregado Exitosamente");
@@ -104,7 +98,7 @@ public class CadeteriaController : ControllerBase
 
     }
 
-    [HttpPut("Asignar_Pedido")]
+    [HttpPut("AsignarPedido")]
     public ActionResult<string> AsignarPedido(int idCadete, int numPedido)
     {
         if(!mostaza.AsignarCadeteAPedido(idCadete, numPedido)){
@@ -120,9 +114,9 @@ public class CadeteriaController : ControllerBase
     {
         if (!mostaza.CambiarEstadoPedido(numPedido,estado))
         {
-            return StatusCode(500, "No se pudo encontrar el pedido solicitado");
+            return BadRequest("No se pudo encontrar el pedido solicitado");
         }else{
-            return Ok("Asignacion Realizada Correctamente");
+            return Ok("Cambio del Estado Realizado Correctamente");
         }
     }
     [HttpPut("Cambiar_Cadete_Pedido")]
