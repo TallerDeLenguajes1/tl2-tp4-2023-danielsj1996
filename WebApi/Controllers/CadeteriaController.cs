@@ -97,6 +97,18 @@ public class CadeteriaController : ControllerBase
         }
 
     }
+    [HttpPost("Add_Cadete")]
+    public ActionResult<string> AddCadete(string nombre,string direccion,string telefono)
+    {
+        if (!mostaza.NuevoCadete(nombre,direccion,telefono))
+        {
+            return BadRequest("No se pudo tomar el Cadete");
+        }else
+        {
+            return Ok("Cadete Agregado Exitosamente");
+        }
+
+    }
 
     [HttpPut("AsignarPedido")]
     public ActionResult<string> AsignarPedido(int idCadete, int numPedido)
