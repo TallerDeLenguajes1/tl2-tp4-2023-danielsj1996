@@ -6,113 +6,134 @@ namespace WebApi.Controllers;
 [Route("[controller]")]
 public class CadeteriaController : ControllerBase
 {
-    private Cadeteria cadeteria;
-    private Pedido pedidos;
-    private Cadete cadetes;
-    private Informe informe;
-
-    private AccesoDatosCadeteria acceso;
-
-
+    private static bool datosCargados = false;
     private readonly ILogger<CadeteriaController> _logger;
+    private Cadeteria mostaza;
+
+    private List<Cadete> listadeCadetes;
 
     public CadeteriaController(ILogger<CadeteriaController> logger)
     {
         _logger = logger;
-        cadeteria = Cadeteria.Instance;
+        mostaza = Cadeteria.GetCadeteria();
 
     }
 
 
-    [HttpGet(Name = "GetPedidos")]
-    public ActionResult<string> GetCadeteria()
+    [HttpGet]
+    public ActionResult<string> GetInfo()
     {
-
-        return Ok(cadeteria);
+            if (!datosCargados)
+        {
+            return NotFound("ERROR.Informacion no definida");
+        }
+        else
+        {
+            string info = mostaza.Nombre + "," + mostaza.Telefono;
+            return Ok(info);
+        }
     }
 
-    [HttpGet(Name = "GetPedidos")]
-    [Route("[pedidos]")]
 
-    public ActionResult<string> GetPedidos()
+    [HttpGet]
+    [Route("Pedido")]
+
+    public ActionResult<IEnumerable<Pedido>> GetPedidos()
     {
-
-        return Ok(pedidos);
+        if (mostaza.ListadePedidos.Count != 0)
+        {
+            return Ok(mostaza.ListadePedidos);
+        }
+        else
+        {
+            return NotFound("ERROR. Ningun pedido Cargado Actualmente");
+        }
     }
 
 
-    [HttpGet(Name = "GetCadetes")]
+    [HttpGet]
     [Route("Cadete")]
-    public ActionResult<string> GetCadetes()
+    public ActionResult<IEnumerable<Cadete>> GetCadetes()
     {
-        return Ok(acceso.ObtenerListaCadetes());
+        if (!datosCargados)
+        {
+            return NotFound("ERROR. Informacion no Encontrada");
+        }
+        else
+        {
+            return Ok(mostaza.ListadeCadetes);
+        }
     }
 
-    [HttpGet(Name = "GetInforme")]
+    [HttpGet]
     [Route("Informe")]
-    public ActionResult<string> GetInforme()
+    public ActionResult<Informe> GetInforme()
     {
-        return Ok(informe);
+        if (!datosCargados)
+        {
+            return BadRequest("ERROR. Acceso denegado");
+        }
+        else
+        {
+            return Ok(mostaza.CrearInforme());
+        }
+    }
+    [HttpPost("CargaDatos")]
+    public ActionResult<string> CargaInicialDatos(string tipoAcceso)
+    {
+        if (!mostaza.CargarDatosIniciales(tipoAcceso))
+        {
+            return StatusCode(500, "ERROR. No se cargaron los datos correctamente.");
+        }
+        else
+        {
+            datosCargados = true;
+            return Ok("Datos cargados correctamente");
+        }
     }
     [HttpPost("Add_Pedidos")]
     public ActionResult<string> AddPedidos(string obsPedido, string nombreCliente, string DireccionCliente, string telefonoCl, string datosRefCl)
     {
-        cadeteria.NuevoPedido(obsPedido, nombreCliente, DireccionCliente, telefonoCl, datosRefCl);
-        var pedido = cadeteria.ListadePedidos.FirstOrDefault(p => p.Nro == cadeteria.ListadePedidos.Count() - 1);
-        if (pedido != null)
+        if (!mostaza.NuevoPedido(obsPedido, nombreCliente, DireccionCliente, telefonoCl, datosRefCl))
         {
-            return Ok(pedido);
+            return StatusCode(500, "No se pudo tomar el pedido");
+        }else
+        {
+            return Ok("Pedido Agregado Exitosamente");
         }
-        return StatusCode(500, "No se pudo tomar el pedido");
+
     }
 
     [HttpPut("Asignar_Pedido")]
     public ActionResult<string> AsignarPedido(int idCadete, int numPedido)
     {
-        var pedido = cadeteria.ListadePedidos.FirstOrDefault(p => p.Nro == numPedido);
-        var cadete = cadeteria.ListadeCadetes.FirstOrDefault(p => p.Id == idCadete);
-        if (pedido != null)
-        {
-            if (cadete != null)
-            {
-                pedido.IdCadete = idCadete;
-                return Ok(pedido);
-            }
-            return StatusCode(500, "No se pudo encontrar el cadete solicitado");
+        if(!mostaza.AsignarCadeteAPedido(idCadete, numPedido)){
+            return BadRequest("ERROR. ID de cadete o nro pedido no existentes");
+        } else{
+            return Ok("Asignación realizada con éxito");
         }
-        return StatusCode(500, "No se pudo encontrar el pedido");
+        
     }
+
     [HttpPut("Cambiar_Estado_Pedido")]
     public ActionResult<string> CambiarEstadoPedido(int numPedido, int estado)
     {
-        var pedido = cadeteria.ListadePedidos.FirstOrDefault(p => p.Nro == numPedido);
-        if (pedido != null)
+        if (!mostaza.CambiarEstadoPedido(numPedido,estado))
         {
-            if (pedido.Estado == EstadoPedido.Pendiente)
-            {
-                if (estado > 0 && estado < 4)
-                {
-                    pedido.Estado = (EstadoPedido)Enum.Parse(typeof(EstadoPedido), estado.ToString());
-                    return Ok(pedido);
-                }
-                return StatusCode(500,"El estado que quiere asignar no es valido")
-            }else
-            {
-                if (pedido.Estado==EstadoPedido.Entregado)
-                {return NotFound("El pedido ya fue entregado");
-                    
-                }else
-                {
-                    return NotFound("El pedido fue Cancelado anteriormente");
-                }
-            }
-            
+            return StatusCode(500, "No se pudo encontrar el pedido solicitado");
+        }else{
+            return Ok("Asignacion Realizada Correctamente");
         }
-        return StatusCode(500, "No se pudo encontrar el pedido");
     }
-[HttpPut("Cambiar_Cadete_Pedido")]
-public ActionResult<string>CambiarCadeteDePedido(int idCadete,int numPedido){
-    return AsignarPedido(idCadete,numPedido);
-}
+    [HttpPut("Cambiar_Cadete_Pedido")]
+    public ActionResult<string> CambiarCadeteDePedido(int idCadete, int numPedido)
+    {
+              if(!mostaza.ReasignarPedidoACadete(numPedido, idCadete)){
+            return BadRequest("ERROR. No se puede realizar la operacion");
+        } else{
+            return Ok("Cambio de cadete a pedido realizado exitosamente");
+        }
+    }
+    }
 
-}
+

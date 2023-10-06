@@ -32,20 +32,4 @@ public class Informe
         this.cantPromedioDePedidosEntregados = totalPedidosEntregados/cantCadetes;
     }
 
-
-    private static void MostrarInforme(Informe informe)
-    {
-
-        Console.WriteLine("\n************** Informe **************");
-        Console.WriteLine($"Cantidad de Cadetes: {informe.CantCadetes}");
-        Console.WriteLine($"\nID                Nombre                      cant. Pedidos Entregados            Monto Ganado\n");
-        for (int i = 0; i < informe.CantCadetes; i++)
-        {
-            Console.WriteLine($"{informe.IdCadetes[i]}              {informe.NombresCadetes[i]}                             {informe.CantPedidosEntregadosporCadetes[i]}                                  {informe.MontoCadetes[i]}");
-        }
-        Console.WriteLine($"\n Total de Pedidos Entregados: {informe.TotalPedidosEntregados}");
-        Console.WriteLine($"\n Cantidad promedio de Pedidos Entregados por cadete: {informe.CantPromedioDePedidosEntregados}");
-
-
-    }
     }

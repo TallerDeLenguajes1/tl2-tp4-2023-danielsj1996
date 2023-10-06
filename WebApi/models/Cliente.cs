@@ -18,4 +18,5 @@ public class Cliente
         this.Telefono = telefono;
         this.DatosReferenciaDireccion = datosReferenciaDireccion;
     }
+    public Cliente() {}
 }

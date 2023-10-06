@@ -6,8 +6,9 @@ namespace WebApi;
 public abstract class AccesoDatosCadeteria
 {
     public abstract Cadeteria ObtenerInfoCadeteria(string rutaDatosCadeteria);
-
     public abstract List<Cadete> ObtenerListaCadetes(string rutaDatosCadetes);
+
+
     public bool ExisteArchivoDatos(string ruta)
     {
         FileInfo archivo = new FileInfo(ruta);
@@ -22,7 +23,39 @@ public abstract class AccesoDatosCadeteria
         }
     }
 }
+public class AccesoCSV : AccesoDatosCadeteria
+{
+    
+    public override Cadeteria ObtenerInfoCadeteria(string rutaDatosCadeteria){
+        string[] datosCadeteria;
 
+        using (StreamReader archivo = new StreamReader(rutaDatosCadeteria))
+        {
+            datosCadeteria = archivo.ReadLine().Split(',');
+        }
+
+        Cadeteria cadeteria = new Cadeteria(datosCadeteria[0], datosCadeteria[1]);
+        return cadeteria;
+    } 
+
+    public override List<Cadete> ObtenerListaCadetes(string rutaDatosCadetes){
+        List<Cadete> cadetes = new List<Cadete>();
+
+        string linea = "";
+        string[] datosCadete;
+
+        using(StreamReader archivo = new StreamReader(rutaDatosCadetes))
+        {
+            while((linea = archivo.ReadLine()) != null){
+                datosCadete = linea.Split(',');
+                Cadete cadete = new Cadete(Convert.ToInt32(datosCadete[0]), datosCadete[1], datosCadete[2], datosCadete[3]);
+                cadetes.Add(cadete);
+            }
+        }
+
+        return cadetes;
+    }
+}
 public class AccesoAJson : AccesoDatosCadeteria
 {
     public override Cadeteria ObtenerInfoCadeteria(string rutaDatosCadeteria)
